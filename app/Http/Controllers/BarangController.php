@@ -1,8 +1,11 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\API;
 
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\BarangModel;
+use App\Http\Resources\BarangResource;
 
 class BarangController extends Controller
 {
@@ -13,7 +16,8 @@ class BarangController extends Controller
      */
     public function index()
     {
-        //
+        $barang = BarangModel::latest()->get();
+        return response()->json([BarangResource::collection($barang), 'Programs fetched.']);
     }
 
     /**
@@ -34,7 +38,15 @@ class BarangController extends Controller
      */
     public function store(Request $request)
     {
-        //
+
+
+        $barang = BarangModel::create([
+            'kode_barang' => $request->kode_barang,
+            'nama_barang' => $request->nama_barang,
+            'harga' => $request->harga
+        ]);
+
+        return response()->json(['Program created successfully.', new BarangResource($barang)]);
     }
 
     /**
@@ -45,7 +57,11 @@ class BarangController extends Controller
      */
     public function show($id)
     {
-        //
+        $barang = BarangModel::find($id);
+        if (is_null($barang)) {
+            return response()->json('Data not found', 404);
+        }
+        return response()->json([new BarangResource($barang)]);
     }
 
     /**
@@ -68,7 +84,13 @@ class BarangController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $barang = BarangModel::find($id);
+        $barang->kode_barang = $request->kode_barang;
+        $barang->nama_barang = $request->nama_barang;
+        $barang->harga = $request->harga;
+        $barang->save();
+
+        return response()->json(['Program updated successfully.', new BarangResource($barang)]);
     }
 
     /**
@@ -77,8 +99,10 @@ class BarangController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(BarangModel $barang)
     {
-        //
+        $barang->delete();
+
+        return response()->json('Program deleted successfully');
     }
 }

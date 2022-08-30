@@ -1,8 +1,11 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\API;
 
+use App\Http\Controllers\Controller;
+use App\Http\Resources\PembelianResource;
 use Illuminate\Http\Request;
+use App\PembelianModel;
 
 class PembelianController extends Controller
 {
@@ -13,7 +16,8 @@ class PembelianController extends Controller
      */
     public function index()
     {
-        //
+        $pembelian = PembelianModel::latest()->get();
+        return response()->json([PembelianResource::collection($pembelian), 'Programs fetched.']);
     }
 
     /**
@@ -34,7 +38,13 @@ class PembelianController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $pembelian = PembelianModel::create([
+            'tanggal' => $request->tanggal,
+            'keterangan' => $request->keterangan,
+            'total_harga' => $request->total_harga
+        ]);
+
+        return response()->json(['Program created successfully.', new PembelianResource($pembelian)]);
     }
 
     /**
@@ -45,7 +55,11 @@ class PembelianController extends Controller
      */
     public function show($id)
     {
-        //
+        $pembelian = PembelianModel::find($id);
+        if (is_null($pembelian)) {
+            return response()->json('Data not found', 404);
+        }
+        return response()->json([new PembelianResource($pembelian)]);
     }
 
     /**
@@ -68,7 +82,13 @@ class PembelianController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $pembelian = PembelianModel::find($id);
+        $pembelian->tanggal = $request->tanggal;
+        $pembelian->keterangan = $request->keterangan;
+        $pembelian->total_harga = $request->total_harga;
+        $pembelian->save();
+
+        return response()->json(['Program updated successfully.', new PembelianResource($pembelian)]);
     }
 
     /**
@@ -77,8 +97,10 @@ class PembelianController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(PembelianModel $pembelian)
     {
-        //
+        $pembelian->delete();
+
+        return response()->json('Program deleted successfully');
     }
 }
